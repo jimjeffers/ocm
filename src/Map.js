@@ -173,7 +173,7 @@ class GeoJSONLayer extends Component {
 
     render() {
         console.log('GeoJSONLayer.render()', this.props.data);
-        if (this.props.data.features !== undefined) {
+        if (this.props.data.features !== undefined && this.props.data.features.length > 0) {
             var keyId = 0;
             const polygons = this.props.data.features.map(function(feature) {
                     const coordinates = feature.geometry.coordinates[0];
@@ -186,7 +186,7 @@ class GeoJSONLayer extends Component {
             });
             return(<FeatureGroup>{polygons}</FeatureGroup>)
         }
-        return <FeatureGroup />
+        return null;
     }
 }
 
@@ -222,6 +222,9 @@ const BoundaryHandleLayer = observer(class BoundaryHandleLayer extends Component
     render() {
         const polygons = store.store.values().filter(v => v.type === 'polygon');
         console.log("BoundaryHandleLayer ", polygons);
+        if (polygons.length === 0) {
+            return null;
+        }
         return (
             <LayerGroup>
                 {   
@@ -296,8 +299,8 @@ export default class MainMap extends Component {
                 zoom={this.state.zoom} 
                 zoomControl={true}
                 maxZoom={22}
-                onZoomEnd={(e) => { 
-                    this.setState({zoom: e.target._zoom});}}> 
+                onZoomEnd={(e) => 
+                    this.setState({zoom: e.target._zoom})} 
                 ref="leafletMap">
 
                 <ZoomControl position='topleft' />

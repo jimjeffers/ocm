@@ -1,7 +1,4 @@
 import React, { Component } from 'react';
-import * as turfBuffer from '@turf/buffer';
-import turfHelpers from '@turf/helpers';
-import * as turfBbox from '@turf/bbox';
 
 import MainMap from './Map';
 import MyNavbar from './nav';
@@ -9,11 +6,15 @@ import SearchBar from './SearchBar';
 
 import {store} from './DataStore';
 
+const turfBuffer = require('@turf/buffer');
+const turfHelpers = require('@turf/helpers');
+const turfBbox = require('@turf/bbox');
+
 
 const makeBBox = (center, radius) => {
     const f = turfHelpers.point(center);
-    const b = turfBuffer.default(f, radius, 'meters');
-    return turfBbox.default(b);
+    const b = turfBuffer(f, radius, 'meters');
+    return turfBbox(b);
 }
 
 

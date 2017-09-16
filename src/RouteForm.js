@@ -5,7 +5,7 @@ import FontAwesome from 'react-fontawesome';
 import MobxReactForm from 'mobx-react-form';
 import validatorjs from 'validatorjs';
 
-import {store} from './Map';
+import {store} from './DataStore';
 
 
 const plugins = { dvr: validatorjs };
