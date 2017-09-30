@@ -22,13 +22,18 @@ const bboxFlip = (bbox) => ([[bbox[1], bbox[0]],
                              [bbox[3], bbox[2]]]);
 
 const lngLatFlip = (center) => ([center[1], center[0]]);
+ 
 
-
-export default class TheApp extends Component {
+/*
+* ####################################
+* ## This is where the app begins ! ##
+* ####################################
+*/
+export default class ReactApp extends Component {
 
     constructor(props) {
         super(props);
-        const initialCenter = [8.67972,50.11361];
+        const initialCenter = [8.67972,50.11361]; //TODO: get center from browser's geolocation
         this.state = {
             center: initialCenter,
             bbox: makeBBox(initialCenter, 200000),
@@ -65,7 +70,7 @@ export default class TheApp extends Component {
     }
 
 
-    updateMapCenter =({geocode, radius}) => {
+    updateMapCenter = ({geocode, radius}) => {
         console.log('Map filters:', geocode, radius);
         const bbox=makeBBox(geocode.center, radius);
         this.loadData({center: geocode.center, radius: radius});
@@ -96,12 +101,12 @@ export default class TheApp extends Component {
         return (
             <div>
                 <div className="navBar">
-                    <MyNavbar>
+                    <MyNavbar mapRef={this.mainMap}>
                         <SearchBar initialSearch="" updateMapCenter={this.updateMapCenter}/>
                     </MyNavbar>
                 </div>
                 <div>
-                    <MainMap center={lngLatFlip(center)} bbox={bboxFlip(bbox)} {...theRest} />
+                    <MainMap center={lngLatFlip(center)} bbox={bboxFlip(bbox)} {...theRest} ref={(mainMap)=>{this.mainMap = mainMap}}/>
                 </div>
             </div>
     );} // render()

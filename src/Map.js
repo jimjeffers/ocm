@@ -9,6 +9,7 @@ import {observer} from 'mobx-react';
 import Radar from './map/Radar';
 import {store} from './DataStore';
 import PropertiesEditor from './PropertiesEditor';
+import OSMClimbingDataLayer from './osm/OSMClimbingDataLayer';
 
 
 const mapboxAttribution = 'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
@@ -172,21 +173,32 @@ class RouteClustersLayer extends Component {
 class GeoJSONLayer extends Component {
 
     render() {
-        console.log('GeoJSONLayer.render()', this.props.data);
-        if (this.props.data.features !== undefined && this.props.data.features.length > 0) {
-            var keyId = 0;
-            const polygons = this.props.data.features.map(function(feature) {
-                    const coordinates = feature.geometry.coordinates[0];
-                    const pts = coordinates.map(p => [p[1], p[0]]);
-                    return (<FeatureGroup key={keyId++}>
-                                <Polygon key={keyId++} color='purple' positions={pts} />
-                                <BoundaryHandleLayer2 key={keyId++} coordinates={pts} properties={feature.properties} />
-                            </FeatureGroup>
-                            );
-            });
-            return(<FeatureGroup>{polygons}</FeatureGroup>)
-        }
         return null;
+        console.log('GeoJSONLayer.render()', this.props.data);
+        if (this.props.data.features === undefined) {
+            return <LayerGroup/>;
+        }
+
+        if (this.props.data.features.length < 1) {
+            return <LayerGroup/>;
+        }
+        
+        var keyId = -1;
+        const polygons = this.props.data.features.map(
+            function(feature) {
+                keyId++;
+                const coordinates = feature.geometry.coordinates[0];
+                const pts = coordinates.map(p => [p[1], p[0]]);
+                console.log("drawing area polygon: ", feature.properties, pts);
+                return (<FeatureGroup key={keyId}>
+                            <Polygon color='purple' positions={pts} />
+                            <BoundaryHandleLayer2  coordinates={pts} properties={feature.properties} />
+                        </FeatureGroup>
+                        );
+            }
+        );
+        console.log("polygons: ", polygons );
+       return(<FeatureGroup>{polygons}</FeatureGroup>);        
     }
 }
 
@@ -266,7 +278,8 @@ export default class MainMap extends Component {
           lng: -95.7129,
           zoom: 3,
           routeData: [],
-          boundaryData: [1]
+          boundaryData: [1],
+          leafletRef: null
         };
     }
 
@@ -277,33 +290,35 @@ export default class MainMap extends Component {
 
 
     componentDidMount() {
-
+        console.log("### ref: ", this.leafletRef);
+        this.setState({
+            leafletRef: this.leafletRef.leafletElement
+        });
     }
 
-    getBounds = () => {
-        const leaflet = this.refs.leafletMap.leafletElement;
-        console.log('leaflet ref', leaflet);
-        if (leaflet !== undefined) {
-            leaflet.fitBounds(this.props.bbox);
-        }
+
+    getBBox = () => {
+        const bboxLatLng = this.state.leafletRef.getBounds();
+        return [bboxLatLng.getSouth(), bboxLatLng.getWest(), bboxLatLng.getNorth(), bboxLatLng.getEast()];
     }
+
 
     render() {
         return (
             <div className="mapRoot">
             <PropertiesEditor store={store}/>
             <Map 
-                style={{height:'100%'}} 
+                style={{height:'90%'}} 
                 center={this.props.center}
                 bounds={this.props.bbox}
                 zoom={this.state.zoom} 
-                zoomControl={true}
+                zoomControl={false}
                 maxZoom={22}
                 onZoomEnd={(e) => 
                     this.setState({zoom: e.target._zoom})} 
-                ref="leafletMap">
+                ref={(leaflet) => {this.leafletRef = leaflet}}>
 
-                <ZoomControl position='topleft' />
+                <ZoomControl position='bottomright' />
                 <ScaleControl position='bottomleft'/>
                 <LayersControl position='topleft'>
                     <LayersControl.BaseLayer name='Satellite'>
@@ -332,6 +347,9 @@ export default class MainMap extends Component {
                     </LayersControl.Overlay>
                     <LayersControl.Overlay checked name='Areas'>
                         <GeoJSONLayer data={this.props.boundaryData} />
+                    </LayersControl.Overlay>
+                    <LayersControl.Overlay checked name='OSM data'>
+                        <OSMClimbingDataLayer/>
                     </LayersControl.Overlay>
                     <LayersControl.Overlay checked name='Your edits'>
                         <LayerGroup>
