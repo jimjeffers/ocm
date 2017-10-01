@@ -9,6 +9,7 @@ export default class SearchBar extends Component {
 
     constructor(props) {
         super(props);
+        this.overlay = null
         this.state = {
             geocode: null,
             radius: 50000, // in km
@@ -81,13 +82,13 @@ class SearchRadius extends Component {
 
     onApplyRadiusChange = () => {
         this.setState({open: false});
-        this.refs.overlay.hide();
+        this.overlay.hide();
         this.props.onUpdateRadius(this.state.appliedRadius);
     }
 
 
     onCancelRadiusChange = () => {
-        this.refs.overlay.hide();
+        this.overlay.hide();
         this.setState({
             appliedRadius: this.state.previousRadius,
             currentRadius: this.state.previousRadius 
@@ -98,7 +99,7 @@ class SearchRadius extends Component {
     render() {
         return (
             <div className="search-radius-component">
-                <OverlayTrigger ref="overlay" trigger="click" placement="bottom" overlay={this.searchRadiusPopover()}>
+                <OverlayTrigger ref={el => this.overlay = el} trigger="click" placement="bottom" overlay={this.searchRadiusPopover()}>
                     <Button bsStyle="link">
                         Within {Math.round(this.state.appliedRadius/1000)} km
                     </Button>
