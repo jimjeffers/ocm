@@ -71,7 +71,7 @@ const FormWidget = observer(({ form, closeFn }) => (
                 {gradeOptions.map(opt => 
                     <option key={opt.value} value={opt.value}>{opt.name}</option>
                     )
-                }>
+                }
             </FormControl>
         </FormGroup>
         

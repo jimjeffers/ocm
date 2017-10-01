@@ -39,11 +39,12 @@ export default class Backend {
 
         fetch(api_url)
             .then(function(response) {
-                if (response.status !== 200) {
-                    store.uiState.completeDataLoad();
-                    options.errorHandler(response);
-                } else {
+                if (response.status >= 200 && response.status < 300) {
                     return response.json();
+                } else {
+                    var error = new Error(response.statusText)
+                    error.response = response;
+                    throw error;
                 }
             })
             .then(function(json) {
@@ -54,6 +55,7 @@ export default class Backend {
             .catch(function(ex) {
                 store.uiState.completeDataLoad();
                 console.log('Backend.load() failed', ex)
+                options.errorHandler(ex);                
         });
     }
 

@@ -1,6 +1,9 @@
 import {useStrict, observable, action} from 'mobx';
 import Backend from './Backend';
 
+const osmQuery = require('query-overpass');
+
+
 useStrict(true);
 
 
@@ -140,7 +143,15 @@ export class DataStore {
     uiState = observable(state);
     store = observable.map();
     backend = new Backend();
+    osmData = observable.shallowArray([{
+        "type":"Feature",
+        "id":"node/4578677466",
+        "properties": {}
+    }], 'Raw OSM data');
 
+    constructor() {
+        action(this.osmData.clear());
+    }
 
     addObject(layer, type) {
         console.log("addObject() id=%s, type=%s", layer._leaflet_id, type); 
@@ -190,6 +201,26 @@ export class DataStore {
         } else {
             console.log('Nothing to save');
         }
+    }
+
+
+    getOSMData (bboxArray) {
+        const bbox = bboxArray.join(',');
+        const node = `node[sport=climbing](${bbox})`;
+        const way = `way[sport=climbing](${bbox})`;
+        const rel = `relation[sport=climbing](${bbox})`;
+        const q = `[out:json];(${node};<;${way};<;);out;`;
+        console.log('Overpass query: ', q);
+
+        const resultHandler = (error, data) => {
+            console.log("OSM Error: ", error);
+            if (!error && data.features !== undefined) {
+                this.osmData.replace(data.features);
+                console.log("Raw OSM data: ", data);                
+            }
+        }
+
+        osmQuery(q, action('Fetch OSM data', resultHandler), {flatProperties: false});        
     }
 }
 
