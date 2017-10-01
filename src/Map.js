@@ -209,6 +209,7 @@ const BoundaryHandleLayer = observer(class BoundaryHandleLayer extends Component
 
     constructor(props) {
         super(props);
+        this.leafletMap = null
         this.clickHandler = this.clickHandler.bind(this);
     }
 
@@ -281,7 +282,7 @@ export default class MainMap extends Component {
     }
 
     getBounds = () => {
-        const leaflet = this.refs.leafletMap.leafletElement;
+        const leaflet = this.leafletMap.leafletElement;
         console.log('leaflet ref', leaflet);
         if (leaflet !== undefined) {
             leaflet.fitBounds(this.props.bbox);
@@ -301,7 +302,7 @@ export default class MainMap extends Component {
                 maxZoom={22}
                 onZoomEnd={(e) => 
                     this.setState({zoom: e.target._zoom})} 
-                ref="leafletMap">
+                ref={el => this.leafletMap = el}>
 
                 <ZoomControl position='topleft' />
                 <ScaleControl position='bottomleft'/>
