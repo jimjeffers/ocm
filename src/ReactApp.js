@@ -48,6 +48,16 @@ export default class ReactApp extends Component {
                 msg: ''
             },
             unit: 'metric',
+            located: false
+        }
+    }
+
+    componentDidMount = () => {
+        if ("geolocation" in navigator) {
+             navigator.geolocation.getCurrentPosition(({coords}) => {
+                this.setState(() => ({located: true}))
+                this.updateMapCenter({geocode: {center: [parseFloat(coords.longitude), parseFloat(coords.latitude)]}, radius: 50000})
+            });
         }
     }
 
@@ -74,7 +84,7 @@ export default class ReactApp extends Component {
 
     updateMapCenter = ({geocode, radius}) => {
         console.log('Map filters:', geocode, radius);
-        const bbox=makeBBox(geocode.center, radius);
+        const bbox = makeBBox(geocode.center, radius);
         this.loadData({center: geocode.center, radius: radius});
         this.setState({
             center: geocode.center,
@@ -87,10 +97,6 @@ export default class ReactApp extends Component {
     loadData = ({center, radius}) => {
         const options = {center: center, radius: radius, okHandler: this.okHandler, errorHandler: this.errorHandler};
         store.backend.load(options);
-    }
-
-    componentDidMount() {
-        //this.loadData({center: this.state.center, radius: this.state.radius});
     }
 
     render() {
